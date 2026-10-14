@@ -106,7 +106,8 @@ public sealed class AppController
         _media.Command += cmd => OnUi(() => { if (Model.NowPlaying is { } np) MediaAction(np.Key, cmd); });
         _media.Seek += seconds => OnUi(() => { if (Model.NowPlaying is { } np) MediaAction(np.Key, "seek", seconds); });
 
-        _flyout = new TrayFlyout(Model);
+        try { _flyout = new TrayFlyout(Model); }
+        catch (Exception e) { WindowFailed("the tray panel", e); }
         if (PairingStore.Shared.PairedDevice == null) ShowDashboard(DashboardPage.Overview, pair: true);
     }
 
@@ -459,7 +460,12 @@ public sealed class AppController
     {
         Model.NotificationsAllowed = Toasts.Allowed;
         RefreshSaveFolder();
-        _flyout?.Toggle();
+        if (_flyout == null)
+        {
+            ShowDashboard();
+            return;
+        }
+        _flyout.Toggle();
     }
 
     public void ShowDashboard(DashboardPage page = DashboardPage.Overview, ActivityFilter? filter = null, string? highlightKey = null, bool pair = false)
@@ -470,7 +476,12 @@ public sealed class AppController
         RefreshSaveFolder();
         if (_dashboard == null)
         {
-            _dashboard = new MainWindow(Model);
+            try { _dashboard = new MainWindow(Model); }
+            catch (Exception e)
+            {
+                WindowFailed("the LinkTwo window", e);
+                return;
+            }
             _dashboard.Closed += (_, _) => _dashboard = null;
         }
         _dashboard.Navigate(page, filter, highlightKey);
@@ -488,11 +499,25 @@ public sealed class AppController
             _pairing.Activate();
             return;
         }
-        _pairing = new PairingWindow(PairingStore.Shared.PairingUri(), PairingStore.Shared.ComputerName);
+        try { _pairing = new PairingWindow(PairingStore.Shared.PairingUri(), PairingStore.Shared.ComputerName); }
+        catch (Exception e)
+        {
+            WindowFailed("the pairing window", e);
+            return;
+        }
         _pairing.Closed += (_, _) => _pairing = null;
         if (_dashboard?.IsVisible == true) _pairing.Owner = _dashboard;
         _pairing.Show();
         _pairing.Activate();
+    }
+
+    /// <summary>A window couldn't be built: log it, tell the user, keep running in the tray.</summary>
+    private static void WindowFailed(string what, Exception e)
+    {
+        Log.Error($"couldn't open {what}", e);
+        System.Windows.MessageBox.Show(
+            $"LinkTwo couldn't open {what}:\n\n{e.GetBaseException().Message}\n\nLinkTwo keeps running in the system tray. " +
+            $"Details are in {AppPaths.Logs}.", "LinkTwo", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     public void Quit()

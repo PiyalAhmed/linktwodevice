@@ -7,7 +7,8 @@
         <BooleanToVisibilityConverter x:Key="Visible" />
         <local:InverseBoolToVisibility x:Key="Hidden" />
         <local:InverseBool x:Key="InverseBool" />
-        <Style x:Key="Section" TargetType="ui:TextBlock" BasedOn="{StaticResource {x:Type ui:TextBlock}}">
+        <!-- WPF-UI has no style registered for its TextBlock, so this one stands alone (no BasedOn). -->
+        <Style x:Key="Section" TargetType="ui:TextBlock">
             <Setter Property="FontTypography" Value="BodyStrong" />
             <Setter Property="Margin" Value="2,24,0,8" />
         </Style>

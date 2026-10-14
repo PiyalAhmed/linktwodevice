@@ -5,7 +5,7 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="Visible" />
         <!-- Segmented tabs: radio buttons drawn as toggle buttons. -->
-        <Style x:Key="Segment" TargetType="RadioButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+        <Style x:Key="Segment" TargetType="RadioButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
             <Setter Property="Padding" Value="16,6" />
             <Setter Property="Margin" Value="0,0,6,0" />
             <Setter Property="GroupName" Value="ActivityTabs" />

@@ -10,7 +10,7 @@
     <ui:FluentWindow.Resources>
         <BooleanToVisibilityConverter x:Key="Visible" />
         <!-- Quick Settings–style tile. -->
-        <Style x:Key="Tile" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+        <Style x:Key="Tile" TargetType="ui:Button" BasedOn="{StaticResource DefaultUiButtonStyle}">
             <Setter Property="Appearance" Value="Secondary" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />

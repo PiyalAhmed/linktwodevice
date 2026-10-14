@@ -23,9 +23,9 @@ env:
 jobs:
   android:
     name: Android APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version
         id: v
@@ -33,18 +33,18 @@ jobs:
           v="${VERSION#v}"; [ -z "$v" ] && v="0.0.0-${GITHUB_SHA::7}"
           echo "version=$v" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           # The default ("tools platform-tools") fails: the legacy "tools" package no longer exists.
           packages: "platform-tools platforms;android-36 build-tools;36.0.0"
           log-accepted-android-sdk-licenses: false
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Release keystore (optional)
         env:
@@ -67,7 +67,7 @@ jobs:
           mkdir -p ../out
           cp app/build/outputs/apk/release/app-release.apk "../out/LinkTwo-android-${{ steps.v.outputs.version }}.apk"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android
           path: out/*.apk
@@ -77,7 +77,7 @@ jobs:
     name: macOS app
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version
         id: v
@@ -95,7 +95,7 @@ jobs:
           mkdir -p ../out
           ditto -c -k --keepParent build/LinkTwo.app "../out/LinkTwo-macOS-${{ steps.v.outputs.version }}.zip"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos
           path: out/*.zip
@@ -105,7 +105,7 @@ jobs:
     name: Windows app
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version
         id: v
@@ -116,7 +116,7 @@ jobs:
           # Assembly versions must be numeric.
           echo "numeric=$(echo "${v%%-*}" | grep -E '^[0-9]+(\.[0-9]+){0,3}$' || echo 0.0.0)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "8.0.x"
 
@@ -132,7 +132,7 @@ jobs:
           mkdir -p ../../out
           cp ../dist/LinkTwo.exe "../../out/LinkTwo-windows-x64-${{ steps.v.outputs.version }}.exe"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows
           path: out/*.exe
@@ -142,16 +142,16 @@ jobs:
     name: Publish release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [android, macos, windows]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: out
           merge-multiple: true
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: out/*
           generate_release_notes: true
