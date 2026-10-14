@@ -13,12 +13,13 @@ import android.widget.Toast
 class ClipTileService : TileService() {
     override fun onStartListening() {
         qsTile?.apply {
+            label = "Clipboard → ${Prefs.kind}"
             state = if (Link.live) Tile.STATE_INACTIVE else Tile.STATE_UNAVAILABLE
             subtitle = when {
                 Link.live -> Link.macName
                 Prefs.paused -> "Paused"
-                Link.connected -> "Mac locked"
-                else -> "Mac away"
+                Link.connected -> "${Prefs.kind} locked"
+                else -> "${Prefs.kind} away"
             }
             updateTile()
         }

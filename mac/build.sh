@@ -3,13 +3,25 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-swift build -c release
+# UNIVERSAL=1 builds one binary for Apple Silicon + Intel (used for releases).
+if [[ "${UNIVERSAL:-}" == "1" ]]; then
+    swift build -c release --arch arm64 --arch x86_64
+    BIN=.build/apple/Products/Release/LinkTwo
+else
+    swift build -c release
+    BIN=.build/release/LinkTwo
+fi
 
 APP=build/LinkTwo.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp .build/release/LinkTwo "$APP/Contents/MacOS/LinkTwo"
+cp "$BIN" "$APP/Contents/MacOS/LinkTwo"
 cp Info.plist "$APP/Contents/Info.plist"
+# VERSION=1.2.3 stamps the bundle version (used for releases).
+if [[ -n "${VERSION:-}" ]]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUILD_NUMBER:-1}" "$APP/Contents/Info.plist"
+fi
 cp Icon/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 codesign --force --sign - "$APP"
 echo "Built $APP"

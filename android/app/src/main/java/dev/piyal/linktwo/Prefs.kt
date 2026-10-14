@@ -14,7 +14,18 @@ object Prefs {
     }
 
     val macId: String? get() = sp.getString("macId", null)
-    val macName: String get() = sp.getString("macName", null) ?: "Mac"
+    val macName: String get() = sp.getString("macName", null) ?: kind
+
+    /** "mac" or "windows", from the pairing code. */
+    val computerOs: String get() = sp.getString("os", null) ?: "mac"
+
+    /** How to refer to the paired computer in UI text: "Mac", "PC", or "computer" before pairing. */
+    val kind: String
+        get() = when {
+            !paired -> "computer"
+            computerOs == "windows" -> "PC"
+            else -> "Mac"
+        }
     val port: Int get() = sp.getInt("port", 47820)
     val key: ByteArray?
         get() = sp.getString("key", null)?.let { Base64.decode(it, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP) }
@@ -56,7 +67,8 @@ object Prefs {
         if (decoded?.size != 32) return false
         sp.edit()
             .putString("macId", id)
-            .putString("macName", uri.getQueryParameter("name") ?: "Mac")
+            .putString("macName", uri.getQueryParameter("name") ?: "Computer")
+            .putString("os", uri.getQueryParameter("os") ?: "mac")
             .putString("key", key)
             .putString("hosts", uri.getQueryParameter("hosts") ?: "")
             .putInt("port", uri.getQueryParameter("port")?.toIntOrNull() ?: 47820)
@@ -67,6 +79,6 @@ object Prefs {
 
     /** Forget the Mac but keep app preferences. */
     fun clear() {
-        sp.edit().remove("macId").remove("macName").remove("key").remove("hosts").remove("port").remove("lastHost").apply()
+        sp.edit().remove("macId").remove("macName").remove("os").remove("key").remove("hosts").remove("port").remove("lastHost").apply()
     }
 }

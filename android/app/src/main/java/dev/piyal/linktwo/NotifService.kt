@@ -184,7 +184,7 @@ class NotifService : NotificationListenerService(), Link.Handler {
             "mediaAction" -> media.control(m.str("key"), m.str("action"), m.header.optLong("value"))
             "clip" -> if (Prefs.receiveClipboard) {
                 getSystemService(ClipboardManager::class.java)
-                    .setPrimaryClip(ClipData.newPlainText("From Mac", m.str("text")))
+                    .setPrimaryClip(ClipData.newPlainText("From ${Prefs.macName}", m.str("text")))
             }
         }
     }

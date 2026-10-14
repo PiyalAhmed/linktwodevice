@@ -189,7 +189,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Send to Mac"
+                        android:text="Send"
                         app:icon="@drawable/ic_laptop" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -245,9 +245,10 @@
                             android:paddingBottom="12dp">
 
                             <TextView
+                                android:id="@+id/filterTitle"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Apps that show on your Mac"
+                                android:text="Apps that show on your computer"
                                 android:textAppearance="?attr/textAppearanceBodyLarge"
                                 android:textColor="?attr/colorOnSurface" />
 
@@ -329,8 +330,9 @@
 
                 <!-- Mac -->
                 <TextView
+                    android:id="@+id/computerHeader"
                     style="@style/LinkTwo.SectionHeader"
-                    android:text="Mac" />
+                    android:text="Computer" />
 
                 <com.google.android.material.card.MaterialCardView
                     style="@style/LinkTwo.Card"

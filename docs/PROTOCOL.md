@@ -1,17 +1,19 @@
 # LinkTwo wire protocol (v1)
 
-Phone (client) ⇄ Mac (server) over TCP port **47820** on the local network. The Mac also advertises
-Bonjour service `_linktwo._tcp` with TXT record `id=<macId>`.
+Phone (client) ⇄ computer — Mac or Windows — (server) over TCP port **47820** on the local network. The computer also advertises a
+Bonjour / DNS-SD service `_linktwo._tcp` with TXT record `id=<computerId>`.
 
 ## Pairing
 
-The Mac shows a QR code:
+The computer shows a QR code:
 
 ```
-linktwo://pair?v=1&id=<macId>&name=<mac name>&key=<base64url 32-byte key>&hosts=<ip,ip>&port=47820
+linktwo://pair?v=1&id=<computerId>&name=<computer name>&key=<base64url 32-byte key>&hosts=<ip,ip>&port=47820[&os=windows]
 ```
 
-`key` is the long-term shared secret. "Reset Pairing" on the Mac rotates it, which locks out the old phone.
+`key` is the long-term shared secret. `os=windows` (sent by the Windows app) makes the phone say "PC" instead of
+"Mac"; absent means Mac. The Mac and Windows apps are interchangeable "computer" ends of the same protocol (the hello
+field is still called `macId` for compatibility). "Reset Pairing" on the Mac rotates it, which locks out the old phone.
 
 ## Framing
 

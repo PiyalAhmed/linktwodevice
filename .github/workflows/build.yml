@@ -1,0 +1,163 @@
+# Builds the Android, macOS and Windows apps on every push and pull request.
+# Pushing a tag like v0.2.0 also publishes a GitHub Release with the three downloads.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # "1.2.3" for tag v1.2.3, otherwise "0.0.0-<short sha>".
+  VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: v
+        run: |
+          v="${VERSION#v}"; [ -z "$v" ] && v="0.0.0-${GITHUB_SHA::7}"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Release keystore (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease -PappVersion="${{ steps.v.outputs.version }}" -PappVersionCode="${{ github.run_number }}"
+          mkdir -p ../out
+          cp app/build/outputs/apk/release/app-release.apk "../out/LinkTwo-android-${{ steps.v.outputs.version }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: out/*.apk
+          if-no-files-found: error
+
+  macos:
+    name: macOS app
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: v
+        run: |
+          v="${VERSION#v}"; [ -z "$v" ] && v="0.0.0-${GITHUB_SHA::7}"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Build universal app (Apple Silicon + Intel)
+        working-directory: mac
+        env:
+          UNIVERSAL: "1"
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          VERSION="${{ steps.v.outputs.version }}" ./build.sh
+          mkdir -p ../out
+          ditto -c -k --keepParent build/LinkTwo.app "../out/LinkTwo-macOS-${{ steps.v.outputs.version }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: out/*.zip
+          if-no-files-found: error
+
+  windows:
+    name: Windows app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: v
+        shell: bash
+        run: |
+          v="${VERSION#v}"; [ -z "$v" ] && v="0.0.0-${GITHUB_SHA::7}"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          # Assembly versions must be numeric.
+          echo "numeric=$(echo "${v%%-*}" | grep -E '^[0-9]+(\.[0-9]+){0,3}$' || echo 0.0.0)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish single-file exe
+        working-directory: windows/LinkTwo
+        shell: bash
+        run: |
+          dotnet publish -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true -p:DebugType=embedded \
+            -p:Version="${{ steps.v.outputs.numeric }}" -p:InformationalVersion="${{ steps.v.outputs.version }}" \
+            -o ../dist
+          mkdir -p ../../out
+          cp ../dist/LinkTwo.exe "../../out/LinkTwo-windows-x64-${{ steps.v.outputs.version }}.exe"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: out/*.exe
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, macos, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
+          body: |
+            ## Download
+
+            | Device | File | First run |
+            |---|---|---|
+            | **Android** 12+ | `LinkTwo-android-*.apk` | Open the APK and allow installing from this source. Then in LinkTwo: grant notification access (if the switch is greyed out: App info → ⋮ → *Allow restricted settings*). |
+            | **Mac** (macOS 14+, Apple Silicon or Intel) | `LinkTwo-macOS-*.zip` | Unzip, move **LinkTwo** to Applications. It isn't notarized: right-click → **Open** the first time (or System Settings → Privacy & Security → *Open Anyway*). |
+            | **Windows** 10 (2004+) / 11, x64 | `LinkTwo-windows-x64-*.exe` | Just run it. SmartScreen may warn because it isn't code-signed: **More info → Run anyway**. Allow it on **private networks** when the firewall asks. |
+
+            Pair by opening LinkTwo on the computer (menu bar on Mac, system tray on Windows) and scanning its QR code from the phone app. Phone and computer must be on the same Wi-Fi.

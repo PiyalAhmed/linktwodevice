@@ -11,7 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.piyal.linktwo.databinding.DialogSendBinding
 
 /**
- * "Send to Mac" in the share sheet: an invisible activity hosting a standard progress dialog. It stays alive
+ * "Send to computer" in the share sheet: an invisible activity hosting a standard progress dialog. It stays alive
  * until the transfer finishes, because the read permission for shared files only lasts while it's open.
  */
 class ShareActivity : AppCompatActivity() {
@@ -22,7 +22,7 @@ class ShareActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         when {
             Prefs.paused -> return bail("LinkTwo is paused. Resume it in the app first.")
-            !Link.connected -> return bail("Your Mac isn't reachable. Are you on home Wi-Fi?")
+            !Link.connected -> return bail("Your ${Prefs.kind} isn't reachable. Are you on home Wi-Fi?")
             !Link.macActive -> return bail("${Link.macName} is locked. Unlock it, then try again.")
         }
 
@@ -73,7 +73,7 @@ class ShareActivity : AppCompatActivity() {
             runOnUiThread {
                 bail(when {
                     ok < uris.size -> "Sent $ok of ${uris.size}. The connection was lost."
-                    toClipboard -> "Sent. It's also on your Mac's clipboard."
+                    toClipboard -> "Sent. It's also on your ${Prefs.kind}'s clipboard."
                     else -> "Sent to ${Link.macName}"
                 })
             }

@@ -33,7 +33,7 @@ object PhoneClipboard {
     /** Why sending isn't possible right now, or null if it is. */
     fun blockedReason(): String? = when {
         Prefs.paused -> "LinkTwo is paused"
-        !Link.connected -> "Your Mac isn't reachable"
+        !Link.connected -> "Your ${Prefs.kind} isn't reachable"
         !Link.macActive -> "${Link.macName} is locked"
         else -> null
     }

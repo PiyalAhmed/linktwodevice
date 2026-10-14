@@ -79,13 +79,12 @@ class MainActivity : AppCompatActivity() {
         clipSwitch = MaterialSwitch(this).apply {
             setOnCheckedChangeListener { _, on -> Prefs.receiveClipboard = on }
         }
-        b.clipReceive.setup(R.drawable.ic_paste, "Receive Mac clipboard", "Text you copy on the Mac is ready to paste here") {
+        b.clipReceive.setup(R.drawable.ic_paste, "Receive computer clipboard", null) {
             clipSwitch.toggle()
         }
         b.clipReceive.trailing.addView(clipSwitch)
 
-        b.clipSend.setup(R.drawable.ic_info, "Send to Mac",
-            "Select text → To Mac (next to Copy). After a Copy button: the “Clipboard → Mac” tile, or long-press the LinkTwo icon → Send clipboard. Photos and links: Share → your Mac.")
+        b.clipSend.setup(R.drawable.ic_info, "Send to computer", null)
         b.clipSend.root.isClickable = false
         b.clipSend.root.background = null
 
@@ -137,13 +136,25 @@ class MainActivity : AppCompatActivity() {
         b.filterHint.text = when (Prefs.filterMode) {
             "allow" -> if (count == 0) "Nothing is sent until you choose some apps." else "Only the apps you choose are sent."
             "block" -> "Apps you choose stay on your phone. Everything else is sent."
-            else -> "Notifications from every app are sent while you're using your Mac."
+            else -> "Notifications from every app are sent while you're using your ${Prefs.kind}."
         }
         b.chooseApps.root.visibility = if (Prefs.filterMode == "all") View.GONE else View.VISIBLE
         b.chooseApps.summary.visibility = View.VISIBLE
         b.chooseApps.summary.text = if (count == 0) "None selected" else "$count selected"
 
         if (clipSwitch.isChecked != Prefs.receiveClipboard) clipSwitch.isChecked = Prefs.receiveClipboard
+
+        // Wording that depends on which computer we're paired with.
+        val kind = Prefs.kind
+        b.computerHeader.text = if (kind == "computer") "Computer" else kind
+        b.filterTitle.text = "Apps that show on your $kind"
+        b.clipReceive.title.text = "Receive $kind clipboard"
+        b.clipReceive.summary.text = "Text you copy on the $kind is ready to paste here"
+        b.clipReceive.summary.visibility = View.VISIBLE
+        b.clipSend.summary.text = "Select text → To $kind (next to Copy). After a Copy button: the “Clipboard → $kind” tile, " +
+            "or long-press the LinkTwo icon → Send clipboard. Photos and links: Share → ${Prefs.macName}."
+        b.clipSend.summary.visibility = View.VISIBLE
+        ProcessTextLabel.apply(this)
 
         b.macInfo.setup(R.drawable.ic_laptop, Prefs.macName,
             Link.macHost?.let { "Connected · $it" } ?: "Not connected")
@@ -156,24 +167,25 @@ class MainActivity : AppCompatActivity() {
         val variant = com.google.android.material.R.attr.colorOnSurfaceVariant
         val s = when {
             !Prefs.paired -> S(R.drawable.ic_laptop, primary, "Not paired",
-                "Pair with your Mac", "On your Mac, open LinkTwo from the menu bar and scan the code it shows.")
+                "Pair with your computer",
+                "On your Mac or PC, open LinkTwo (menu bar on a Mac, system tray on Windows) and scan the code it shows.")
             !notifAccess() -> S(R.drawable.ic_info, androidx.appcompat.R.attr.colorError, "Off",
                 "Notification access needed", "LinkTwo can't run in the background until it's turned on.")
             Prefs.paused -> S(R.drawable.ic_pause_circle, com.google.android.material.R.attr.colorTertiary, "Paused",
                 "Syncing is paused", "Nothing is sent to or received from $mac until you resume.")
             Link.live -> S(R.drawable.ic_check_circle, primary, "Connected",
-                "Connected to $mac", "New notifications and calls appear on your Mac.")
+                "Connected to $mac", "New notifications and calls appear on your ${Prefs.kind}.")
             Link.connected && Link.macInactiveReason == "paused" -> S(R.drawable.ic_pause_circle,
                 com.google.android.material.R.attr.colorTertiary, "Paused",
-                "Paused on $mac", "Syncing was paused from your Mac. Notifications stay on your phone.")
+                "Paused on $mac", "Syncing was paused from your ${Prefs.kind}. Notifications stay on your phone.")
             Link.connected -> S(R.drawable.ic_pause_circle, com.google.android.material.R.attr.colorTertiary, "Paused",
-                "$mac is locked", "Notifications stay on your phone until you unlock your Mac.")
+                "$mac is locked", "Notifications stay on your phone until you unlock your ${Prefs.kind}.")
             Link.state == Link.State.SEARCHING -> S(R.drawable.ic_refresh, variant,
                 "Searching", "Looking for $mac", "Checking this Wi-Fi network…")
             Link.state == Link.State.NOT_FOUND -> S(R.drawable.ic_info, variant,
                 "Not connected", "$mac isn't available", "It may be asleep or on another network. Nothing is sent.")
             else -> S(R.drawable.ic_info, variant,
-                "Not connected", "Not on home Wi-Fi", "LinkTwo will connect when you're on the same Wi-Fi as your Mac.")
+                "Not connected", "Not on home Wi-Fi", "LinkTwo will connect when you're on the same Wi-Fi as your ${Prefs.kind}.")
         }
         val color = MaterialColors.getColor(b.root, s.color)
         b.statusIcon.setImageResource(s.icon)
@@ -252,11 +264,11 @@ class MainActivity : AppCompatActivity() {
                 )
             })
             if (!phonePerms.all { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }) add(
-                Step(R.drawable.ic_phone, "Calls", "Show incoming calls on your Mac and answer from there", "Allow") {
+                Step(R.drawable.ic_phone, "Calls", "Show incoming calls on your ${Prefs.kind} and answer from there", "Allow") {
                     requestPermissions(phonePerms, 1)
                 })
             if (!pm.isIgnoringBatteryOptimizations(packageName)) add(
-                Step(R.drawable.ic_battery, "Unrestricted battery use", "Keeps the connection to your Mac reliable", "Allow") {
+                Step(R.drawable.ic_battery, "Unrestricted battery use", "Keeps the connection to your ${Prefs.kind} reliable", "Allow") {
                     startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
                 })
         }
@@ -314,7 +326,7 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setIcon(R.drawable.ic_delete)
             .setTitle("Unpair from ${Prefs.macName}?")
-            .setMessage("You'll need to scan the pairing code on your Mac again to reconnect.")
+            .setMessage("You'll need to scan the pairing code on your ${Prefs.kind} again to reconnect.")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Unpair") { _, _ ->
                 Link.disconnect()

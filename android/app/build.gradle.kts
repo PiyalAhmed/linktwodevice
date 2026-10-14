@@ -10,14 +10,29 @@ android {
         applicationId = "dev.piyal.linktwo"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1"
+        // CI passes -PappVersion=1.2.3 -PappVersionCode=<run number>; local builds stay 0.1 / 1.
+        versionCode = (project.findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
+        versionName = (project.findProperty("appVersion") as String?) ?: "0.1"
+    }
+
+    signingConfigs {
+        // Optional stable release key (GitHub secrets → env). Without it, release builds use the debug key,
+        // which is fine for trying the app but changes between CI runs (updates then need an uninstall first).
+        val keystore = System.getenv("ANDROID_KEYSTORE_PATH")
+        if (keystore != null && file(keystore).exists()) {
+            create("release") {
+                storeFile = file(keystore)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

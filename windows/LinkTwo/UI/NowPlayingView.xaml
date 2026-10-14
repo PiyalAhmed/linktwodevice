@@ -1,0 +1,95 @@
+<UserControl x:Class="LinkTwo.UI.NowPlayingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <!-- Media card in the style of Windows 11's Quick Settings player: artwork over a blurred wash of itself. -->
+    <Border CornerRadius="8" ClipToBounds="True" BorderThickness="1"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+        <Grid>
+            <Image x:Name="Backdrop" Stretch="UniformToFill" Opacity="0.35" IsHitTestVisible="False"
+                   Source="{Binding Art}">
+                <Image.Effect>
+                    <BlurEffect Radius="60" KernelType="Gaussian" />
+                </Image.Effect>
+            </Image>
+
+            <StackPanel Margin="14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border x:Name="ArtFrame" Width="72" Height="72" CornerRadius="6" RenderTransformOrigin="0.5,0.5"
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Border.RenderTransform>
+                            <ScaleTransform x:Name="ArtScale" ScaleX="1" ScaleY="1" />
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="ArtShadow" BlurRadius="14" ShadowDepth="4" Opacity="0.35" Direction="270" />
+                        </Border.Effect>
+                        <Grid>
+                            <ui:SymbolIcon Symbol="MusicNote224" FontSize="28" Opacity="0.7" />
+                            <Border CornerRadius="6">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="{Binding Art}" Stretch="UniformToFill" />
+                                </Border.Background>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="14,2,0,0" VerticalAlignment="Center">
+                        <ui:TextBlock Text="{Binding Title}" FontTypography="BodyStrong" TextTrimming="CharacterEllipsis" />
+                        <ui:TextBlock Text="{Binding Artist}" Appearance="Secondary" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <!-- Three bars that dance while playing. -->
+                            <Canvas x:Name="Bars" Width="12" Height="10" Margin="0,0,6,0" VerticalAlignment="Center">
+                                <Rectangle x:Name="Bar1" Width="2.5" Height="4" RadiusX="1" RadiusY="1" Canvas.Left="0" Canvas.Bottom="0" Fill="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                <Rectangle x:Name="Bar2" Width="2.5" Height="7" RadiusX="1" RadiusY="1" Canvas.Left="4" Canvas.Bottom="0" Fill="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                <Rectangle x:Name="Bar3" Width="2.5" Height="5" RadiusX="1" RadiusY="1" Canvas.Left="8" Canvas.Bottom="0" Fill="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                            </Canvas>
+                            <ui:TextBlock Text="{Binding App}" FontTypography="Caption" Appearance="Secondary" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="ProgressRow" Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Slider x:Name="Progress" Minimum="0" IsMoveToPointEnabled="True"
+                            Thumb.DragStarted="Progress_DragStarted" Thumb.DragCompleted="Progress_DragCompleted"
+                            PreviewMouseLeftButtonUp="Progress_MouseUp" />
+                    <Grid Grid.Row="1" Margin="2,2,2,0">
+                        <ui:TextBlock x:Name="Elapsed" FontTypography="Caption" Appearance="Secondary" HorizontalAlignment="Left" />
+                        <ui:TextBlock x:Name="Remaining" FontTypography="Caption" Appearance="Secondary" HorizontalAlignment="Right" />
+                    </Grid>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                    <ui:Button Appearance="Transparent" Width="44" Height="40" ToolTip="Previous" Click="Previous_Click"
+                               Icon="{ui:SymbolIcon Previous24}" />
+                    <ui:Button x:Name="PlayPause" Appearance="Transparent" Width="56" Height="48" Margin="18,0" Click="PlayPause_Click">
+                        <ui:SymbolIcon x:Name="PlayPauseIcon" Symbol="Pause24" Filled="True" FontSize="28" />
+                    </ui:Button>
+                    <ui:Button Appearance="Transparent" Width="44" Height="40" ToolTip="Next" Click="Next_Click"
+                               Icon="{ui:SymbolIcon Next24}" />
+                </StackPanel>
+
+                <Grid x:Name="VolumeRow" Margin="0,8,0,0" ToolTip="Phone media volume">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon Symbol="Speaker024" FontSize="16" Opacity="0.7" VerticalAlignment="Center" />
+                    <Slider x:Name="Volume" Grid.Column="1" Margin="8,0" Minimum="0" IsMoveToPointEnabled="True"
+                            Thumb.DragCompleted="Volume_DragCompleted" PreviewMouseLeftButtonUp="Volume_MouseUp" />
+                    <ui:SymbolIcon Grid.Column="2" Symbol="Speaker224" FontSize="16" Opacity="0.7" VerticalAlignment="Center" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

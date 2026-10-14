@@ -1,0 +1,52 @@
+<ui:FluentWindow x:Class="LinkTwo.UI.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:local="clr-namespace:LinkTwo.UI"
+                 Title="LinkTwo" Width="960" Height="680" MinWidth="760" MinHeight="520"
+                 ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica" WindowCornerPreference="Round"
+                 WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="TitleBar" Title="LinkTwo" />
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation, Settings-app style -->
+            <ListBox x:Name="Nav" Margin="8,4,4,8" BorderThickness="0" Background="Transparent"
+                     SelectionChanged="Nav_SelectionChanged">
+                <ListBoxItem x:Name="NavOverview" Padding="10,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Home24" FontSize="18" Margin="0,0,12,0" />
+                        <TextBlock Text="Overview" VerticalAlignment="Center" />
+                    </StackPanel>
+                </ListBoxItem>
+                <ListBoxItem x:Name="NavActivity" Padding="10,8">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="History24" FontSize="18" Margin="0,0,12,0" />
+                            <TextBlock Text="Activity" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                </ListBoxItem>
+            </ListBox>
+
+            <Border Grid.Column="1" Margin="0,0,8,8" CornerRadius="8"
+                    Background="{DynamicResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <Grid>
+                    <local:OverviewPage x:Name="Overview" />
+                    <local:ActivityPage x:Name="Activity" Visibility="Collapsed" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

@@ -62,13 +62,13 @@ class FileReceiver(private val ctx: Context) {
 
     private fun notifyReceived(f: Incoming) {
         val nm = ctx.getSystemService(NotificationManager::class.java)
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Files from Mac", NotificationManager.IMPORTANCE_DEFAULT))
+        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Files from your computer", NotificationManager.IMPORTANCE_DEFAULT))
         val view = Intent(Intent.ACTION_VIEW).setDataAndType(f.uri, f.mime)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         val pi = PendingIntent.getActivity(ctx, f.uri.hashCode(), view, PendingIntent.FLAG_IMMUTABLE)
         val n = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_link)
-            .setContentTitle("Received from Mac")
+            .setContentTitle("Received from ${Prefs.macName}")
             .setContentText(f.name)
             .setContentIntent(pi)
             .setAutoCancel(true)

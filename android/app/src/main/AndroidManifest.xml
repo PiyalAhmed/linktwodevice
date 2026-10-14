@@ -32,7 +32,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- "Send clipboard to Mac" app shortcut + the Direct Share target. -->
+            <!-- "Send clipboard" app shortcut + the Direct Share target. -->
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
@@ -61,12 +61,25 @@
             </intent-filter>
         </activity>
 
-        <!-- "To Mac" in the text-selection menu. A short label and a high priority give it the best chance of
-             showing in the visible bar (after Android's own Cut / Copy / Share) instead of under ⋮. -->
+        <!-- "To Mac" / "To PC" in the text-selection menu. Labels are fixed at install time, so there's one alias
+             per computer type; ProcessTextLabel enables the one matching the paired computer. -->
         <activity-alias
             android:name=".SendSelectedText"
+            android:enabled="true"
             android:exported="true"
             android:label="@string/process_text_label"
+            android:targetActivity=".ShareActivity">
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".SendSelectedTextPc"
+            android:enabled="false"
+            android:exported="true"
+            android:label="@string/process_text_label_pc"
             android:targetActivity=".ShareActivity">
             <intent-filter android:priority="999">
                 <action android:name="android.intent.action.PROCESS_TEXT" />
