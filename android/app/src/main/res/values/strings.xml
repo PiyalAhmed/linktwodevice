@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LinkTwo</string>
+    <string name="send_to_mac">Send to Mac</string>
+    <string name="tile_label">Clipboard → Mac</string>
+    <string name="shortcut_clip_short">Send clipboard</string>
+    <string name="process_text_label">To Mac</string>
+    <string name="shortcut_clip_long">Send clipboard to Mac</string>
+</resources>

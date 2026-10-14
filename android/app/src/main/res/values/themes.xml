@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colours come from the wallpaper (Material You dynamic colour, applied in LinkApp). -->
+    <style name="Theme.LinkTwo" parent="Theme.Material3.DayNight.NoActionBar" />
+
+    <!-- Invisible host for dialogs (Share → Send to Mac). -->
+    <style name="Theme.LinkTwo.Translucent" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+</resources>

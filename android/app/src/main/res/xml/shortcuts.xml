@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Long-press the app icon (or pin it, or trigger it from Modes and Routines / back tap). -->
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_clipboard"
+        android:shortcutId="send_clipboard"
+        android:shortcutLongLabel="@string/shortcut_clip_long"
+        android:shortcutShortLabel="@string/shortcut_clip_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="dev.piyal.linktwo.ClipSendActivity"
+            android:targetPackage="dev.piyal.linktwo" />
+    </shortcut>
+
+    <!-- Direct Share: the paired Mac appears in the top row of the share sheet. -->
+    <share-target android:targetClass="dev.piyal.linktwo.ShareActivity">
+        <data android:mimeType="*/*" />
+        <category android:name="dev.piyal.linktwo.category.SEND_TO_MAC" />
+    </share-target>
+</shortcuts>
